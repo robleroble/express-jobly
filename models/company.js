@@ -1,7 +1,11 @@
 "use strict";
 
 const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
+const {
+  BadRequestError,
+  NotFoundError,
+  ExpressError,
+} = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
 
 /** Related functions for companies. */
@@ -46,12 +50,15 @@ class Company {
 
   static async findAll(filterBy = [], vals = []) {
     let whereQuery;
-
+    let invalidFilters = [];
     // if there are arguments to filter by, we add these parameters to the query
     if (filterBy.length > 0) {
       whereQuery = "WHERE ";
       // empty array to store query segments for each filter
       let whereQueryArgs = [];
+      // filters to check
+      let validFilters = ["minEmployees", "maxEmployees", "name"];
+
       // loop over filters and add them to the whereQueryArgs
       for (let i = 0; i <= filterBy.length - 1; i++) {
         if (filterBy[i] === "minEmployees") {
@@ -60,6 +67,8 @@ class Company {
           whereQueryArgs.push(`num_employees <= ${vals[i]}`);
         } else if (filterBy[i] === "name") {
           whereQueryArgs.push(`name ILIKE '%${vals[i]}%'`);
+        } else if (validFilters.includes(filterBy[i]) === false) {
+          invalidFilters.push(filterBy[i]);
         }
       }
       // join the query together
@@ -67,6 +76,14 @@ class Company {
     } else {
       // if there are no arguments to filter by, we remove the whereQuery by making it an empty string
       whereQuery = "";
+    }
+
+    if (invalidFilters.length >= 0) {
+      invalidFilters = invalidFilters.join(", ");
+      throw new ExpressError(
+        `${invalidFilters} are invalid filter queries.`,
+        400
+      );
     }
 
     const companiesRes = await db.query(
