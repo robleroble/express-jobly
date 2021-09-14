@@ -78,7 +78,7 @@ class Company {
       whereQuery = "";
     }
 
-    if (invalidFilters.length >= 0) {
+    if (invalidFilters.length > 0) {
       invalidFilters = invalidFilters.join(", ");
       throw new ExpressError(
         `${invalidFilters} are invalid filter queries.`,

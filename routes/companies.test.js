@@ -139,7 +139,7 @@ describe("GET /companies", function () {
 
     expect(resp.body).toEqual({
       error: {
-        message: "nameeee is/are invalid search filters.",
+        message: "nameeee are invalid filter queries.",
         status: 400,
       },
     });

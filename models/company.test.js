@@ -100,6 +100,29 @@ describe("findAll", function () {
     ]);
   });
 
+  test("gets company by multiple filters", async function () {
+    const companies = await Company.findAll(
+      ["minEmployees", "maxEmployees"],
+      [2, 3]
+    );
+    expect(companies).toEqual([
+      {
+        handle: "c2",
+        name: "C2",
+        description: "Desc2",
+        numEmployees: 2,
+        logoUrl: "http://c2.img",
+      },
+      {
+        handle: "c3",
+        name: "C3",
+        description: "Desc3",
+        numEmployees: 3,
+        logoUrl: "http://c3.img",
+      },
+    ]);
+  });
+
   test("gets error with invalid query", async function () {
     try {
       const companies = await Company.findAll(["nameeee"], ["3"]);
