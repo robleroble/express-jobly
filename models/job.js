@@ -19,6 +19,8 @@ class Job {
    */
 
   static async create({ title, salary, equity, company_handle }) {
+    // Need to check if company exists - can't create job if there is no company
+
     const result = await db.query(
       `INSERT INTO jobs
                 (title, salary, equity, company_handle)
@@ -127,3 +129,5 @@ class Job {
     if (!job) throw new NotFoundError(`No job with id of: ${id}`);
   }
 }
+
+module.exports = Job;

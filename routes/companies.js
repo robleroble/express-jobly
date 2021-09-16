@@ -20,16 +20,8 @@ const router = new express.Router();
  *
  * Returns { handle, name, description, numEmployees, logoUrl }
  *
- * Authorization required: login
+ * Authorization required: admin (anonymous users can use register route to create user)
  */
-
-//  {
-// 	"handle": "newcompany",
-// 	"name": "New Company",
-// 	"description": "this is a new company",
-// 	"numEmployees": 420,
-// 	"logoUrl": "www.logourl.com"
-// }
 
 router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
   try {
