@@ -9,7 +9,7 @@ const { BadRequestError } = require("../expressError");
  *
  * first checks to see if there is actual data to update by checking if there are any keys in the data
  *
- * Then maps over each key, creating sql segments (EG: first_name=$1, last_name=$2, etc.)
+ * Then maps over each key, creating sql segments (EG: first_name=$1, last_name=$2, etc.), for keys that need to be changed for the SQL query, it changes them based on the jsToSql object that is passed
  *
  * data that can be updated is provided in jsToSql input
  */
