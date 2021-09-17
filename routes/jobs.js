@@ -66,7 +66,7 @@ router.post("/", ensureLoggedIn, ensureAdmin, async function (req, res, next) {
       const errs = validator.errors.map((e) => e.stack);
       throw new BadRequestError(errs);
     }
-    const job = await Job.create({ job });
+    const job = await Job.create(req.body);
     return res.status(201).json({ job });
   } catch (err) {
     return next(err);

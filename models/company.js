@@ -110,21 +110,36 @@ class Company {
 
   static async get(handle) {
     const companyRes = await db.query(
-      `SELECT handle,
-                  name,
-                  description,
-                  num_employees AS "numEmployees",
-                  logo_url AS "logoUrl"
-           FROM companies
+      `SELECT c.handle,
+                  c.name,
+                  c.description,
+                  c.num_employees AS "numEmployees",
+                  c.logo_url AS "logoUrl"
+           FROM companies AS c
            WHERE handle = $1`,
       [handle]
     );
 
     const company = companyRes.rows[0];
 
+    const jobsRes = await db.query(
+      `SELECT j.id, j.title, j.salary, j.equity
+        FROM jobs as j
+        WHERE company_handle = $1`,
+      [handle]
+    );
+
+    const companyWithJobs = {
+      handle: company.handle,
+      name: company.name,
+      description: company.description,
+      numEmployees: company.numEmployees,
+      logoUrl: company.logoUrl,
+      jobs: jobsRes.rows,
+    };
     if (!company) throw new NotFoundError(`No company: ${handle}`);
 
-    return company;
+    return companyWithJobs;
   }
 
   /** Update company data with `data`.
@@ -145,7 +160,7 @@ class Company {
       logoUrl: "logo_url",
     });
     const handleVarIdx = "$" + (values.length + 1);
-
+    console.log(setCols, values);
     const querySql = `UPDATE companies 
                       SET ${setCols} 
                       WHERE handle = ${handleVarIdx} 

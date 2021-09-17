@@ -7,7 +7,7 @@ const {
   NotFoundError,
   ExpressError,
 } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers.sql");
+const { sqlForPartialUpdate } = require("../helpers/sql");
 
 class Job {
   /**Creates a job (from data), updates db, returns new job data.
@@ -20,12 +20,24 @@ class Job {
 
   static async create({ title, salary, equity, company_handle }) {
     // Need to check if company exists - can't create job if there is no company
+    const companyResult = await db.query(
+      `SELECT *
+        FROM companies
+        WHERE handle = $1`,
+      [company_handle]
+    );
+
+    if (companyResult.rows.length === 0) {
+      throw new ExpressError(
+        `Company with handle of ${company_handle} doesn't exist.`
+      );
+    }
 
     const result = await db.query(
       `INSERT INTO jobs
                 (title, salary, equity, company_handle)
                 VALUES ($1, $2, $3, $4)
-                RETURNING id, title, salary, equity, company_handle AS "company_handle`,
+                RETURNING id, title, salary, equity, company_handle`,
       [title, salary, equity, company_handle]
     );
     const job = result.rows[0];
@@ -44,17 +56,18 @@ class Job {
     let queryArgs = [];
 
     if (title) {
-      queryArgs.push(`title ILIKE $${title}$`);
+      queryArgs.push(`title ILIKE '%${title}%'`);
     }
     if (minSalary) {
       queryArgs.push(`salary >= ${minSalary}`);
     }
-    if (hasEquity === true) {
+    if (hasEquity) {
       queryArgs.push(`equity > 0`);
     }
 
+    // join wherequery arguments together
     if (queryArgs.length > 0) {
-      whereQuery = "WHERE" + queryArgs.join(" AND ");
+      whereQuery = "WHERE " + queryArgs.join(" AND ");
     }
 
     const jobs = await db.query(
@@ -97,12 +110,12 @@ class Job {
    */
 
   static async update(id, data) {
-    const { setCols, values } = sqlPartialUpdate(data, {});
-    const handleVarIdx = "$" + (values.length + 1);
+    const { setCols, values } = sqlForPartialUpdate(data, {});
+    const idVarIdx = "$" + (values.length + 1);
 
     const querySql = `UPDATE jobs
                             SET ${setCols}
-                            WHERE id = ${id}
+                            WHERE id = ${idVarIdx}
                             RETURNING id, title, salary, equity, company_handle`;
     const result = await db.query(querySql, [...values, id]);
     const job = result.rows[0];
