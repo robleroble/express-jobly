@@ -160,7 +160,6 @@ class Company {
       logoUrl: "logo_url",
     });
     const handleVarIdx = "$" + (values.length + 1);
-    console.log(setCols, values);
     const querySql = `UPDATE companies 
                       SET ${setCols} 
                       WHERE handle = ${handleVarIdx} 
