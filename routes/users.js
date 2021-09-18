@@ -132,4 +132,22 @@ router.delete(
   }
 );
 
+router.post(
+  "/:username/jobs/:job_id",
+  ensureLoggedIn,
+  ensureAdminOrOwnUser,
+  async function (req, res, next) {
+    try {
+      const { username, job_id } = req.params;
+      await User.apply(username, job_id);
+      console.log(username, job_id);
+      return res.json({
+        applied: `user ${username} applied to job with id of: ${job_id}`,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
 module.exports = router;
