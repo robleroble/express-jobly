@@ -7,11 +7,14 @@ const {
 } = require("../expressError");
 const db = require("../db.js");
 const User = require("./user.js");
+const Job = require("./job.js");
 const {
   commonBeforeAll,
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  jobIds,
+  testJobId,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -225,6 +228,53 @@ describe("remove", function () {
       fail();
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
+//////////////////////////////
+// apply to job
+
+describe("apply to job", function () {
+  test("works", async function () {
+    const jobs = await Job.findAll();
+    const testJobId = jobs[2].id;
+    await User.apply("u2", testJobId);
+
+    const job = await db.query(`
+    SELECT * FROM applications WHERE job_id = ${testJobId}`);
+
+    expect(job.rows.length).toEqual(1);
+  });
+
+  test("fails when applying to same job as same user", async function () {
+    try {
+      const jobs = await Job.findAll();
+      const testJobId = jobs[0].id;
+      await User.apply("u1", testJobId);
+      fail();
+    } catch (err) {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  test("not found if no such job", async function () {
+    try {
+      const jobs = await Job.findAll();
+      const testJobId = jobs[2].id;
+      await User.apply("u1", 0);
+      fail();
+    } catch (err) {
+      expect(err).toBeTruthy();
+    }
+  });
+
+  test("not found if no such user", async function () {
+    try {
+      await User.apply("nope", testJobIds[0]);
+      fail();
+    } catch (err) {
+      expect(err).toBeTruthy();
     }
   });
 });
