@@ -13,6 +13,7 @@ const {
   commonAfterAll,
   u1Token,
   u2Token,
+  testJobIds,
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -290,5 +291,34 @@ describe("DELETE /users/:username", function () {
       .delete(`/users/nope`)
       .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(404);
+  });
+});
+
+/////////////////////////////////////////////
+// POST /users/:username/jobs/:job_id
+
+describe("POST /users/:username/jobs/job_id", function () {
+  // u1 is admin and u2 is regular user
+  test("works for admin", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/${testJobIds[0]}`)
+      .set("authorization", `Bearer ${u1Token}`);
+    expect(resp.body).toEqual({
+      applied: `user u2 applied to job with id of: ${testJobIds[0]}`,
+    });
+  });
+
+  test("regular user can apply themself", async function () {
+    const resp = await request(app)
+      .post(`/users/u2/jobs/${testJobIds[0]}`)
+      .set("authorization", `Bearer ${u2Token}`);
+    expect(resp.body).toEqual({
+      applied: `user u2 applied to job with id of: ${testJobIds[0]}`,
+    });
+  });
+
+  test("anonymous user can't apply for someone else", async function () {
+    const resp = await request(app).post(`/users/u2/jobs/${testJobIds[0]}`);
+    expect(resp.statusCode).toEqual(401);
   });
 });
