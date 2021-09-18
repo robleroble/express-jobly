@@ -140,7 +140,6 @@ router.post(
     try {
       const { username, job_id } = req.params;
       await User.apply(username, job_id);
-      console.log(username, job_id);
       return res.json({
         applied: `user ${username} applied to job with id of: ${job_id}`,
       });
